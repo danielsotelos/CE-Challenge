@@ -1,0 +1,76 @@
+#We create a class to change the color of the words or make them bold
+class color:
+   BLUE = '\033[94m'
+   BOLD = '\033[1m'
+   END = '\033[0m'
+
+import numpy as np #we use a NumPy library to generate random data
+import math
+
+#We present the program
+print(color.BOLD+"**********************************************************************************************************************************************")
+print ("This program generates the graph of moment and calculates the area of reinforcing steel for a beam subjected to a uniformly distributed load.")
+print("**********************************************************************************************************************************************\n"+color.END)
+
+#Initial input data: Compressive strength fc, yield stress fy, base b, height h,
+#effective depth d, distributed load q and distance between supports L (columns)
+fc=float(input("•Please enter the compresive strength fc' [MPa]: -> "))
+fy=float(input("•Please enter the yield stress fy [MPa]: -> "))
+b=float(input("•Please enter the base of the beam [m]: -> "))
+h=float(input("•Enter the height of the beam [m]: -> "))
+d=float(input("•Enter the effective depth of the beam [m]: -> "))
+q=float(input("•Enter the distributed load [kN/m]: -> "))
+L=float(input("•Enter the distance between supports (columns) [m]: -> "))
+r=float(input("•Enter the covering [mm]: -> "))
+s=float(input("•Enter the stirrup [mm]: -> "))
+x=np.linspace(0,L,1000) #we create a coordinate from the origin 0 to the distance L
+                        #for 1000 values (array)
+
+M=q/2 *(L*x - x**2)
+
+from matplotlib import pyplot as plt #We use the Matplotlib library to visualize NumPy data
+
+axis=[0]*len(x)                 #We plot a line representing the x-axis
+                                #we create a variable with x number of zeros
+plt.plot(x,axis,color='k')      #We make the x-axis line visible
+plt.xlabel('Beam Lenght [m]')   #We label the X-axis
+plt.ylabel('Moment [kN.m]')     #We label the Y-axis
+
+#We plot the bending moment graph with legends and title
+plt.plot(x,-M,label="M")
+plt.title("Moment Diagram")
+plt.legend()
+
+maxM=np.amax(M)
+x_M = np.where(M == np.amax(maxM))
+M_x_coor=(x[x_M])
+
+Mlabel="{:.2f}".format(maxM)
+plt.annotate(Mlabel,(M_x_coor,-maxM),textcoords="offset points",xytext=(0,10),ha='center')
+
+print ("\nThe maximum moment is"+color.BOLD+color.BLUE,"{:.2f}".format(maxM),"kN.m"+color.END)
+
+maxM=float(maxM)
+#We find the amount of reinforcement and verify if it is more/less than the maximum amount
+ρ=(1-(math.sqrt(1-((2.62*maxM)/(b*(d**2)*fc*(10**3))))))*(fc/(1.18*fy))
+ρmax=0.319*(0.85)*(fc/fy)
+print("\nWith this data, it was found that the reinforcement and its maximum amount are\n"+color.BOLD+color.BLUE,"ρ=","{:.6f}".format(ρ),color.END,"and\n"+color.BOLD+color.BLUE,"ρmax=","{:.6f}".format(ρmax),color.END,", respectively.")
+if ρ<ρmax:
+  print("\nAs ρ<ρmax, there is no compression reinforcement needed.")
+  As=ρ*(b*1000)*(d*1000)
+  print("\nThe reinforcement area is"+color.BOLD+color.BLUE,"As=","{:.2f}".format(As),"mm²")
+else:
+  print ("\nAs ρ>ρmax, there is compression reinforcement needed.")
+  As1=ρmax*(b*1000)*(d*1000)
+  a=(As1*fy)/(0.85*fc*b)
+  M1=As1*fy*(d-a/2)
+  M2=(maxM/0.9)-M1
+  As2=M2/(fy*(10**3)*(d-0.06))
+  As=(As1+As2)/100
+  fs=0.003*((a-0.051)/a)*200000
+  if fs<420:
+    Ass=((M2*(10**3))/(fs*(10**6)*(d-0.06)))/10000
+  else:
+    Ass=As2/100
+  print("\nThe reinforcement area is"+color.BOLD+color.BLUE,"As=","{:.2f}".format(As),"mm²"+color.END)
+  print("\nThe compression reinforcement area is"+color.BOLD+color.BLUE,"As'=","{:.2f}".format(Ass),"mm²"+color.END)
